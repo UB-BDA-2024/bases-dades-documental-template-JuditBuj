@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from . import models, schemas
+from app.redis_client import RedisClient
+import json
 
 def get_sensor(db: Session, sensor_id: int) -> Optional[models.Sensor]:
     return db.query(models.Sensor).filter(models.Sensor.id == sensor_id).first()
@@ -20,13 +22,28 @@ def create_sensor(db: Session, sensor: schemas.SensorCreate) -> models.Sensor:
     db.refresh(db_sensor)
     return db_sensor
 
-def record_data(redis: Session, sensor_id: int, data: schemas.SensorData) -> schemas.Sensor:
-    db_sensordata = data
-    return db_sensordata
 
-def get_data(redis: Session, sensor_id: int, data: schemas.SensorData) -> schemas.Sensor:
-    db_sensordata = data
-    return db_sensordata
+#Modificat: Creem la funcio record_data
+#Volem que els sensors puguin escriure les seves dades a la base
+def record_data(redis: RedisClient, sensor_id: int, data: schemas.SensorData) -> schemas.SensorData:
+    #Agafem la base de dades del sensor
+    db_sensor = redis.get(sensor_id)
+
+    #Si la tenim, canviem les seves dades, per les dades de data que son les que volem
+    if db_sensor:
+        return redis.set(sensor_id, json.dumps(data))
+
+
+def get_data(redis: RedisClient, sensor_id: int, db: Session) -> schemas.Sensor:
+    #Agafem la base de dades del sensor
+    db_sensor = redis.get(sensor_id)
+        
+    #Si la tenim, retornem les dades més el id i el nom 
+    if db_sensor:
+        db_dada = json.loads(db_sensor)
+        db_dada["id"] = sensor_id
+        db_dada["name"] = get_sensor(db, sensor_id).name
+        return db_dada
 
 def delete_sensor(db: Session, sensor_id: int):
     db_sensor = db.query(models.Sensor).filter(models.Sensor.id == sensor_id).first()
