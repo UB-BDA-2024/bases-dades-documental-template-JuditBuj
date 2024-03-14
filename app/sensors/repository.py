@@ -43,13 +43,9 @@ def create_sensor(db: Session, sensor: schemas.SensorCreate, mongodb_client: Mon
 
 #Modificat: Creem la funcio record_data
 #Volem que els sensors puguin escriure les seves dades a la base
-def record_data(redis: RedisClient, sensor_id: int, data: schemas.SensorData) -> schemas.SensorData:
-    #Agafem la base de dades del sensor
-    db_sensor = redis.get(sensor_id)
-
-    #Si la tenim, canviem les seves dades, per les dades de data que son les que volem
-    if db_sensor:
-        return redis.set(sensor_id, json.dumps(data))
+def record_data(redis: RedisClient, sensor_id: int, data: schemas.SensorData) -> schemas.Sensor:
+    redis.set(sensor_id, json.dumps(data.dict()))
+    return json.loads(redis.get(sensor_id))
 
 
 def get_data(redis: RedisClient, sensor_id: int, db: Session) -> schemas.Sensor:
@@ -70,3 +66,5 @@ def delete_sensor(db: Session, sensor_id: int):
     db.delete(db_sensor)
     db.commit()
     return db_sensor
+
+
