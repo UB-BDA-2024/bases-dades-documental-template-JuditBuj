@@ -41,10 +41,8 @@ router = APIRouter(
 
 # 🙋🏽‍♀️ Add here the route to get a list of sensors near to a given location
 @router.get("/near")
-def get_sensors_near(latitude: float, longitude: float, db: Session = Depends(get_db),mongodb_client: MongoDBClient = Depends(get_mongodb_client)):
-    raise HTTPException(status_code=404, detail="Not implemented")
-    #return repository.get_sensors_near(mongodb=mongodb_client, latitude=latitude, longitude=longitude)
-
+def get_sensors_near(latitude: float, longitude: float, radius: float, db: Session = Depends(get_db), mongodb_client: MongoDBClient = Depends(get_mongodb_client), redis_client: RedisClient = Depends(get_redis_client)):
+    return repository.get_sensors_near(redis=redis_client, mongodb_client=mongodb_client, db=db, latitude=latitude, longitude=longitude, radius=radius)
 
 # 🙋🏽‍♀️ Add here the route to get all sensors
 @router.get("")
@@ -70,11 +68,11 @@ def get_sensor(sensor_id: int, db: Session = Depends(get_db), mongodb_client: Mo
 
 # 🙋🏽‍♀️ Add here the route to delete a sensor
 @router.delete("/{sensor_id}")
-def delete_sensor(sensor_id: int, db: Session = Depends(get_db), mongodb_client: MongoDBClient = Depends(get_mongodb_client)):
+def delete_sensor(sensor_id: int, db: Session = Depends(get_db), mongodb_client: MongoDBClient = Depends(get_mongodb_client), redis: RedisClient = Depends(get_redis_client)):
     db_sensor = repository.get_sensor(db, sensor_id)
     if db_sensor is None:
         raise HTTPException(status_code=404, detail="Sensor not found")
-    return repository.delete_sensor(db=db, sensor_id=sensor_id)
+    return repository.delete_sensor(db=db, sensor_id=sensor_id, mongodb_client=mongodb_client, redis=redis)
     
 
 # 🙋🏽‍♀️ Add here the route to update a sensor
