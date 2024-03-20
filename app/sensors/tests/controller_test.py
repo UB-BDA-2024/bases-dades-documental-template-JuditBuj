@@ -108,7 +108,6 @@ def test_get_sensor_1_data_updated():
     assert json["battery_level"] == 1.9
     assert json["last_seen"] == "2020-01-01T00:00:01.000Z"
 
-
 def test_get_sensor_2_data_updated():
     """We can get a sensor by its id"""
     response = client.get("/sensors/2/data")
@@ -119,14 +118,6 @@ def test_get_sensor_2_data_updated():
     assert json["velocity"] == 46.0
     assert json["battery_level"] == 1.9
     assert json["last_seen"] == "2020-01-01T00:00:01.000Z"
-
-def test_delete_sensor_1():
-    response = client.delete("/sensors/1")
-    assert response.status_code == 200
-
-def test_delete_sensor_2():
-    response = client.delete("/sensors/2")
-    assert response.status_code == 200
 
 def test_get_near():
     response = client.get("/sensors/near?latitude=1.0&longitude=1.0&radius=1")
@@ -143,3 +134,11 @@ def test_get_near():
     assert json[1]["velocity"] == 46.0
     assert json[1]["battery_level"] == 1.9
     assert json[1]["last_seen"] == "2020-01-01T00:00:01.000Z"
+
+def test_delete_sensor_1():
+    response = client.delete("/sensors/1")
+    assert response.status_code == 200
+
+def test_delete_sensor_2():
+    response = client.delete("/sensors/2")
+    assert response.status_code == 200
